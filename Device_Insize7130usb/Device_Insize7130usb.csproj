@@ -41,8 +41,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
+    <Compile Include="DevInsize7130usb.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="DevInsize7130usb.Designer.cs">
+      <DependentUpon>DevInsize7130usb.cs</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="DevInsize7130usb.resx">
+      <DependentUpon>DevInsize7130usb.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
