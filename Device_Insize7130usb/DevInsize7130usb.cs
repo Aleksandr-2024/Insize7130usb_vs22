@@ -262,6 +262,26 @@ namespace Device_Insize7130usb
         }
         #endregion end Start/Stop Connection
 
+        public StatusCodes Zepo()
+        {
+            if (!_isConnected)
+            {
+                return StatusCodes.NoConnected;
+            }
+            try
+            {
+                byte[] bytes = { 0x99 };
+                serialPort1.Write(bytes, 0, 1);
+            }
+            catch (Exception)
+            {
+                return StatusCodes.SerialPortError;
+            }
+            return StatusCodes.Success;
+        }
+
+
+
         #endregion end Методы
 
         #region Свойства
@@ -365,6 +385,8 @@ namespace Device_Insize7130usb
             Error_If_Connected,    // Нельзя менять если Подключено
             Error_If_Disconnected,    // Нельзя менять если отключено
             Error_IllegalPortNumber,    // Неправильный номер порта
+            NoConnected,            // Нет сединения
+            SerialPortError,        // Ошибка последовательного порта
 
         }
 

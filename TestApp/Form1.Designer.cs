@@ -40,6 +40,7 @@
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.textBox2 = new System.Windows.Forms.TextBox();
             this.devInsize7130usb1 = new Device_Insize7130usb.DevInsize7130usb(this.components);
+            this.button4 = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // button1
@@ -103,7 +104,7 @@
             // 
             this.label4.AutoSize = true;
             this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 48F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label4.Location = new System.Drawing.Point(66, 214);
+            this.label4.Location = new System.Drawing.Point(25, 118);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(446, 73);
             this.label4.TabIndex = 6;
@@ -128,11 +129,11 @@
             // 
             // textBox2
             // 
-            this.textBox2.Location = new System.Drawing.Point(464, 72);
+            this.textBox2.Location = new System.Drawing.Point(464, 258);
             this.textBox2.Multiline = true;
             this.textBox2.Name = "textBox2";
             this.textBox2.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.textBox2.Size = new System.Drawing.Size(277, 323);
+            this.textBox2.Size = new System.Drawing.Size(277, 137);
             this.textBox2.TabIndex = 9;
             this.textBox2.Visible = false;
             // 
@@ -145,11 +146,22 @@
             this.devInsize7130usb1.NewDataAvailable += new Device_Insize7130usb.DevInsize7130usb.newDataAvailable(this.DevInsize7130usb1_NewDataAvaible);
             this.devInsize7130usb1.StatusConnectionChanged += new Device_Insize7130usb.DevInsize7130usb.statusConnectionChanged(this.DevInsize7130usb1_StatusConnectionChanged);
             // 
+            // button4
+            // 
+            this.button4.Location = new System.Drawing.Point(707, 86);
+            this.button4.Name = "button4";
+            this.button4.Size = new System.Drawing.Size(81, 37);
+            this.button4.TabIndex = 10;
+            this.button4.Text = "Zero";
+            this.button4.UseVisualStyleBackColor = true;
+            this.button4.Click += new System.EventHandler(this.button4_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.button4);
             this.Controls.Add(this.textBox2);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.label5);
@@ -181,6 +193,7 @@
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.TextBox textBox2;
+        private System.Windows.Forms.Button button4;
     }
 }
 

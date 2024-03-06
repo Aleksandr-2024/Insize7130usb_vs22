@@ -125,5 +125,24 @@ namespace TestApp
             Thread.Sleep(1000);
 
         }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            DialogResult result = MessageBox.Show("Вы уверены что хотите изменить положение нуля датчика?",
+                "Подтвердить изменение нуля", 
+                MessageBoxButtons.YesNo, 
+                MessageBoxIcon.Question , MessageBoxDefaultButton.Button2);
+            //
+            if (result == DialogResult.Yes) 
+            {
+                // Координата нуля записывается в eeprom датчика, поэтому не следует 
+                // постоянно сбрасывать нуль в датчике.
+                // Для временного получения относительных координат, проще корректировать
+                // текуший ноль в программе.
+                // Установка нуля в датчике имеет смысл, когда нужно привязать координаты датчика
+                // к какому-то постоянному положению, определяемому механикой.
+                devInsize7130usb1.Zepo(); 
+            }
+        }
     }
 }
