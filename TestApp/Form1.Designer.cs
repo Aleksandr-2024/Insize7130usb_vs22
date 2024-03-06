@@ -36,8 +36,10 @@
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
-            this.devInsize7130usb1 = new Device_Insize7130usb.DevInsize7130usb(this.components);
             this.label5 = new System.Windows.Forms.Label();
+            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.textBox2 = new System.Windows.Forms.TextBox();
+            this.devInsize7130usb1 = new Device_Insize7130usb.DevInsize7130usb(this.components);
             this.SuspendLayout();
             // 
             // button1
@@ -100,20 +102,12 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(331, 67);
+            this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 48F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label4.Location = new System.Drawing.Point(66, 214);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(75, 13);
+            this.label4.Size = new System.Drawing.Size(446, 73);
             this.label4.TabIndex = 6;
             this.label4.Text = "Connect result";
-            // 
-            // devInsize7130usb1
-            // 
-            this.devInsize7130usb1.SerialPortNumber = ((uint)(1u));
-            this.devInsize7130usb1.Connected += new Device_Insize7130usb.DevInsize7130usb.deviceConnected(this.DevInsize7130usb1_Connected);
-            this.devInsize7130usb1.Disconnected += new Device_Insize7130usb.DevInsize7130usb.deviceDisconnected(this.DevInsize7130usb1_Disconnected);
-            this.devInsize7130usb1.NotSupported += new Device_Insize7130usb.DevInsize7130usb.deviceNotSupported(this.DevInsize7130usb1_NotSupported);
-            this.devInsize7130usb1.NewDataAvailable += new Device_Insize7130usb.DevInsize7130usb.newDataAvailable(this.DevInsize7130usb1_NewDataAvaible);
-            this.devInsize7130usb1.StatusConnectionChanged += new Device_Insize7130usb.DevInsize7130usb.statusConnectionChanged(this.DevInsize7130usb1_StatusConnectionChanged);
             // 
             // label5
             // 
@@ -124,11 +118,40 @@
             this.label5.TabIndex = 7;
             this.label5.Text = "Connect result";
             // 
+            // textBox1
+            // 
+            this.textBox1.Location = new System.Drawing.Point(651, 24);
+            this.textBox1.Name = "textBox1";
+            this.textBox1.Size = new System.Drawing.Size(50, 20);
+            this.textBox1.TabIndex = 8;
+            this.textBox1.Text = "7";
+            // 
+            // textBox2
+            // 
+            this.textBox2.Location = new System.Drawing.Point(464, 72);
+            this.textBox2.Multiline = true;
+            this.textBox2.Name = "textBox2";
+            this.textBox2.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.textBox2.Size = new System.Drawing.Size(277, 323);
+            this.textBox2.TabIndex = 9;
+            this.textBox2.Visible = false;
+            // 
+            // devInsize7130usb1
+            // 
+            this.devInsize7130usb1.SerialPortNumber = ((uint)(11u));
+            this.devInsize7130usb1.Connected += new Device_Insize7130usb.DevInsize7130usb.deviceConnected(this.DevInsize7130usb1_Connected);
+            this.devInsize7130usb1.Disconnected += new Device_Insize7130usb.DevInsize7130usb.deviceDisconnected(this.DevInsize7130usb1_Disconnected);
+            this.devInsize7130usb1.NotSupported += new Device_Insize7130usb.DevInsize7130usb.deviceNotSupported(this.DevInsize7130usb1_NotSupported);
+            this.devInsize7130usb1.NewDataAvailable += new Device_Insize7130usb.DevInsize7130usb.newDataAvailable(this.DevInsize7130usb1_NewDataAvaible);
+            this.devInsize7130usb1.StatusConnectionChanged += new Device_Insize7130usb.DevInsize7130usb.statusConnectionChanged(this.DevInsize7130usb1_StatusConnectionChanged);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.textBox2);
+            this.Controls.Add(this.textBox1);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.label3);
@@ -139,6 +162,7 @@
             this.Controls.Add(this.button1);
             this.Name = "Form1";
             this.Text = "Form1";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing_1);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -155,6 +179,8 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.TextBox textBox2;
     }
 }
 

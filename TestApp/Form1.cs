@@ -6,8 +6,10 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static Device_Insize7130usb.DevInsize7130usb;
 
 namespace TestApp
 {
@@ -29,7 +31,13 @@ namespace TestApp
 
         private void Button1_Click(object sender, EventArgs e)
         {
-            devInsize7130usb1.SerialPortNumber = 1;
+            if( uint.TryParse(textBox1.Text, out uint value))
+            {
+                if (value > 0)
+                {
+                    devInsize7130usb1.SerialPortNumber = value;
+                }
+            }
         }
 
         private void Button2_Click(object sender, EventArgs e)
@@ -46,12 +54,17 @@ namespace TestApp
 
         private void DevInsize7130usb1_Connected()
         {
-            label3.Text = "Connected";
+            _ = this.Invoke(new Action(() =>
+            { label3.Text = "Connected"; }
+            ));
+            
         }
 
         private void DevInsize7130usb1_Disconnected()
         {
-            label3.Text = "No connection";
+            _ = this.Invoke(new Action(() =>
+            { label3.Text = "No connection"; }
+            ));
         }
 
         private void DevInsize7130usb1_NewDataAvaible()
@@ -59,9 +72,22 @@ namespace TestApp
             //
             while (devInsize7130usb1.QueueMeasuredData.Count > 1) 
             {
+                if (!devInsize7130usb1.IsConnected )
+                    { return; }
                 devInsize7130usb1.QueueMeasuredData.Dequeue();
             }
-            label4.Text = devInsize7130usb1.QueueMeasuredData.Dequeue().ToString();
+            if (!devInsize7130usb1.IsConnected)
+            { return; }
+            _ = this.Invoke(new Action(() =>
+            {
+                MeasuredData measureData = devInsize7130usb1.QueueMeasuredData.Dequeue();
+                //label4.Text = measureData.Time.ToString("mm.ss.tttt")// devInsize7130usb1.QueueMeasuredData.Dequeue().ToString();
+                //label4.Text = measureData.Time.ToString() + " " + measureData.Value.ToString();// devInsize7130usb1.QueueMeasuredData.Dequeue().ToString();
+                //label4.Text = measureData.Time.ToString("mm.ss.fffff") + " " + measureData.Value.ToString();// devInsize7130usb1.QueueMeasuredData.Dequeue().ToString();
+                label4.Text = measureData.Value.ToString("f4");// devInsize7130usb1.QueueMeasuredData.Dequeue().ToString();
+                //textBox2.Text +="\n"+ label4.Text;
+            }
+            ));
         }
 
         private void DevInsize7130usb1_NotSupported()
@@ -79,6 +105,25 @@ namespace TestApp
                 { label5.Text = newStatus.ToString() + " : " + reason.ToString(); }
             ));
             
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            // Закрываем подключение
+            //devInsize7130usb1.StopConnection(); 
+        }
+
+        private void Form1_FormClosing_1(object sender, FormClosingEventArgs e)
+        {
+            if(devInsize7130usb1.IsConnected)
+            {
+                _ = MessageBox.Show("Нужно остановить передачу");
+                e.Cancel = true;
+                return;
+            }
+            //devInsize7130usb1.StopConnection();
+            Thread.Sleep(1000);
+
         }
     }
 }

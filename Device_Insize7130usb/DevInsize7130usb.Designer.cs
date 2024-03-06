@@ -13,6 +13,9 @@
         /// <param name="disposing">истинно, если управляемый ресурс должен быть удален; иначе ложно.</param>
         protected override void Dispose(bool disposing)
         {
+            //            this.serialPort1.DataReceived -= new System.IO.Ports.SerialDataReceivedEventHandler(this.SerialPort1_DataReceived);
+            //serialPort1.Close();
+
             if (disposing && (components != null))
             {
                 components.Dispose();

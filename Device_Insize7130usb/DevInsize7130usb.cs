@@ -80,6 +80,9 @@ namespace Device_Insize7130usb
         }
         #endregion Инициализация 
 
+
+
+
         #region Методы
 
         #region Start/Stop Connection
@@ -116,7 +119,9 @@ namespace Device_Insize7130usb
 
             _isConnecting = true;
             // Настраиваем порт
-            serialPort1.PortName = "COM"+ _serialPortNumber.ToString();
+            if( serialPort1.IsOpen )
+                { serialPort1.Close(); } // Такой ситуации не должно быть, пока решаем так.
+            serialPort1.PortName = "COM" + _serialPortNumber.ToString();
             serialPort1.BaudRate = 9600;
             serialPort1.WriteTimeout = 100;
             serialPort1.ReadTimeout = 100;
@@ -154,7 +159,59 @@ namespace Device_Insize7130usb
                 switch (stateOfConnection)
                 {
                     case ConnectingStates.Start:
+                        // пробуем подключиться к порту.
+                        try
+                        {
+                            serialPort1.Open();
+                        }
+                        catch (Exception ex)
+                        {
+                            if(-2146232800 == ex.HResult)
+                            {
+                                // Порт не существует (не подключен)
+                                // Ситуация не аварийная, ждем когда будет подключен
+                                break;
+                            }
+                            if (-2147024891 == ex.HResult)
+                            {
+                                // Доступ к порту закрыт, порт занят. 
+                                // Завершаем аварийно
+                                // Ситуация не аварийная, ждем когда будет подключен
+                                _isConnecting = false;
+                                StatusConnectionChanged.Invoke(ConnectionStates.NoConnected, ChangeStatusReasons.PortBusy);
+                                return;
+                            }
 
+                            throw; // оставляем для определения других ситуаций
+                        }
+                        if( serialPort1.IsOpen)
+                        {
+                            // Подключились, переходим к проверке.
+                            serialPort1.DiscardInBuffer();
+                            stateOfConnection = ConnectingStates.CheckAuto;
+                        }
+
+
+                        break;
+
+                    case ConnectingStates.CheckAuto:
+                        // Прошла 1 секунда, буфер должен быть заполнен данными
+                        if( _queueMeasuredData.Count > 2 )
+                        { //Буфер заполнился - автоматический режим работает. Успешное подключение.
+                            // Чистим буфер. 
+                            _queueMeasuredData.Clear();
+                            _isConnecting = false;
+                            _isConnected = true;
+                            StatusConnectionChanged.Invoke(ConnectionStates.Connected, ChangeStatusReasons.SuccessConnection);
+                            Connected.Invoke();
+                            return;
+                        }
+                        // перходим к следующему шагу
+                        stateOfConnection = ConnectingStates.End;
+                        break;
+
+                    case ConnectingStates.End: 
+                        // Пока тут зацикливаем...
                         break;
                     default:
                         // Неопределенное состояние - прерываем подключение.
@@ -173,9 +230,10 @@ namespace Device_Insize7130usb
 
         private enum ConnectingStates
         {
-            Start = 0,
-
-
+            Start = 0,  // Начальное состояние
+            CheckAuto,  // Проверка автоматической передачи данных (потоком)
+            End,        // Завершено.
+            Step1, Step2, Step3, Step4, Step5, Step6, Step7, Step8, Step9, Step10, Step11, Step12,
         }
 
         /// <summary>
@@ -189,7 +247,7 @@ namespace Device_Insize7130usb
             if ( _isConnected ) 
             { // подключено
                 // отключаем...
-
+                //serialPort1.Close();
                 _isConnected = false;  // TODO: DEBUG
             }
             else if( _isConnecting )
@@ -236,6 +294,7 @@ namespace Device_Insize7130usb
         private bool _isConnected = false;
         private bool _isConnecting = false;
 
+        public bool IsConnected { get => _isConnected; }
 
         #endregion end Свойства 
 
@@ -349,6 +408,7 @@ namespace Device_Insize7130usb
             SuccessConnection,      // Подключение завершено успешно
             DeviceNoSupported,      // Подключение завершено - Устройство не поддерживается
             IllegalState,           // В процессе подключение попяли в неопределенное состояние
+            PortBusy,               // Полрт занят
         }
 
         /// <summary>
@@ -416,7 +476,7 @@ namespace Device_Insize7130usb
                     continue;
                 }
 
-                if (dataByte == 0x10 )
+                if (dataByte == 10 )
                 { // Последний байт в посылке
                     // байт не добавляем
                     // Делаем проверку, и если все ОК - добавляем в очередь принятых данных
@@ -424,7 +484,11 @@ namespace Device_Insize7130usb
                     // Срока должна быть формата "+99.9999"
                     if( _tempString.Length != 8 ) 
                         { _tempString = ""; continue; } // ошибка, 
-                    if( Double.TryParse(_tempString, out double result))
+                    // МЕняем заточку на запятую
+                    string[] strArray = _tempString.Split('.');
+                    _tempString = strArray[0]+','+ strArray[1];
+
+                    if ( Double.TryParse(_tempString, out double result))
                     {
                         // Преобразование успешное
                         // добавляем в очередь данных
