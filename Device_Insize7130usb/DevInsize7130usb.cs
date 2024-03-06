@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Net.Configuration;
-using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
+using static Device_Insize7130usb.DevInsize7130usb;
+//using System.Data;
+//using System.Diagnostics;
+//using System.IO.Ports;
+//using System.Linq;
+//using System.Net.Configuration;
+//using System.Text;
 
 namespace Device_Insize7130usb
 {
@@ -106,11 +110,21 @@ namespace Device_Insize7130usb
             // Идет подключение, нельзя менять правила
             if (_isConnecting) 
                 { return StatusCodes.Error_If_Connecting; }
+            if( portNumber != _serialPortNumber )
+                { _serialPortNumber = portNumber; }
             // Препятствий нет - запускаем подключение
 
             _isConnecting = true;
-            // Запускаем поток подключения
+            // Настраиваем порт
+            serialPort1.PortName = "COM"+ _serialPortNumber.ToString();
+            serialPort1.BaudRate = 9600;
+            serialPort1.WriteTimeout = 100;
+            serialPort1.ReadTimeout = 100;
+            // Запускаем поток подключения в отдельном потоке
 
+            _tokenTaskConnection = new CancellationTokenSource();
+            //_taskConnection = Task.Run(TaskConnection, _tokenTaskConnection.Token);
+            Task.Run(TaskConnection, _tokenTaskConnection.Token);
 
 
 
@@ -119,7 +133,50 @@ namespace Device_Insize7130usb
             return StatusCodes.Success; // подключение успешно запущено
         }
 
+        
+        //private Task _taskConnection;
+        private CancellationTokenSource _tokenTaskConnection;
+        private const int _timeoutTaskConnection = 1000; // 1 раз в секунду
 
+        /// <summary>
+        ///  Задача подключения
+        ///  Отслеживает заданный порт, Устанавливает подключение
+        /// </summary>
+        private void TaskConnection()
+        {
+            StatusConnectionChanged.Invoke(ConnectionStates.Connecting, ChangeStatusReasons.StartConnecting);
+
+            _queueMeasuredData.Clear(); // очищаем очередь перед подключением
+            ConnectingStates stateOfConnection = ConnectingStates.Start;
+
+            while (!_tokenTaskConnection.IsCancellationRequested)
+            {
+                switch (stateOfConnection)
+                {
+                    case ConnectingStates.Start:
+
+                        break;
+                    default:
+                        // Неопределенное состояние - прерываем подключение.
+                        _isConnecting = false;
+                        StatusConnectionChanged.Invoke(ConnectionStates.NoConnected, ChangeStatusReasons.IllegalState);
+                        return;
+                }
+
+
+                Thread.Sleep(_timeoutTaskConnection);
+            }
+            // Подключение прервано
+            _isConnecting = false;
+            StatusConnectionChanged.Invoke(ConnectionStates.NoConnected, ChangeStatusReasons.CancellConnecting);
+        }
+
+        private enum ConnectingStates
+        {
+            Start = 0,
+
+
+        }
 
         /// <summary>
         /// Остановка подключения.
@@ -137,8 +194,8 @@ namespace Device_Insize7130usb
             }
             else if( _isConnecting )
             {   // процесс подключения - отключаемся...
-
-                _isConnecting = false; // TODO: DEBUG
+                _tokenTaskConnection.Cancel();
+                //_isConnecting = false; // TODO: DEBUG
             }
     
             /// отключение будет из команды
@@ -214,10 +271,15 @@ namespace Device_Insize7130usb
         /// </summary>
         public delegate void newDataAvailable();
 
+        /// <summary>
+        /// Изменился статус подключения
+        /// </summary>
+        public delegate void statusConnectionChanged(ConnectionStates newStatus, ChangeStatusReasons reason);
 
         public event deviceDisconnected Disconnected;
         public event deviceNotSupported NotSupported;
         public event newDataAvailable NewDataAvailable;
+        public event statusConnectionChanged StatusConnectionChanged;
 
 
         #endregion end События
@@ -276,6 +338,38 @@ namespace Device_Insize7130usb
             Connected = 2,      // Подключено
         }
 
+        [global::System.Serializable]
+        /// <summary>
+        ///  Причины смены статуса
+        /// </summary>
+        public enum ChangeStatusReasons
+        {
+            StartConnecting = 0,    // Начало подключения
+            CancellConnecting,      // Подключение прервано - Отмена подключения
+            SuccessConnection,      // Подключение завершено успешно
+            DeviceNoSupported,      // Подключение завершено - Устройство не поддерживается
+            IllegalState,           // В процессе подключение попяли в неопределенное состояние
+        }
+
+        /// <summary>
+        /// Структура данных полученных от датчика
+        /// Время - что-бы знать когда данные получены, пригодятся для проверки:
+        ///         !!! УТОЧНИТЬ !!! Кажется при резком движении датчика данные временно не 
+        ///             передаются !!!
+        ///       * Время получения данных с порта. Если буфер не опрашивался и заполнен,
+        ///         То данные будут отмечены одинаковым временем в момент считывания из буфера.
+        /// Значение - результат измерения
+        /// </summary>
+        public struct MeasuredData
+        {
+            public DateTime Time;
+            public double Value;
+            public MeasuredData(DateTime time, double value) {  Time = time; Value = value; }
+        }
+
+        private readonly Queue<MeasuredData> _queueMeasuredData = new Queue<MeasuredData>();
+        public Queue<MeasuredData> QueueMeasuredData { get { return _queueMeasuredData; } }
+
         #endregion Разное
 
         #region serialport 
@@ -301,10 +395,75 @@ namespace Device_Insize7130usb
 
 
 
+        private string _tempString = ""; // Строка для получения значения от датчика
+
+        /// <summary>
+        /// Обработчик поступащих данных serialPort
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void SerialPort1_DataReceived(object sender, System.IO.Ports.SerialDataReceivedEventArgs e)
+        {
+            //int bytesToRead = serialPort1.BytesToRead;
+
+            while (serialPort1.BytesToRead > 0) 
+            { 
+                int dataByte = serialPort1.ReadByte();
+                // Проверяем полученный байт
+                if( dataByte == '-' || dataByte == '+' )
+                { // первый байт в посылке
+                    _tempString = ((char)dataByte).ToString();
+                    continue;
+                }
+
+                if (dataByte == 0x10 )
+                { // Последний байт в посылке
+                    // байт не добавляем
+                    // Делаем проверку, и если все ОК - добавляем в очередь принятых данных
+
+                    // Срока должна быть формата "+99.9999"
+                    if( _tempString.Length != 8 ) 
+                        { _tempString = ""; continue; } // ошибка, 
+                    if( Double.TryParse(_tempString, out double result))
+                    {
+                        // Преобразование успешное
+                        // добавляем в очередь данных
+                        //_queueMeasuredData.Enqueue(new MeasuredData( ));
+                        _queueMeasuredData.Enqueue(new MeasuredData( System.DateTime.Now, result));
+                        if( _isConnected ) 
+                            { NewDataAvailable.Invoke(); }
+
+                        continue;
+                    }
+                    else
+                    {
+                        // ошибка преобразования
+                        _tempString = ""; continue;
+                    }
+                }
+
+                if( dataByte == '.' )
+                { // разделитель целой и дробной части
+                    _tempString += ((char)dataByte).ToString();
+                    continue;
+                }
+                
+                if (dataByte >= '0' && dataByte <= '9')
+                { // цифры
+                    _tempString += ((char)dataByte).ToString();
+                    continue;
+                }
+                
+                // ошибочный байт
+                _tempString = "";
+            }
+
+
+        }
+
 
 
         #endregion serialport
-
 
     }
 }

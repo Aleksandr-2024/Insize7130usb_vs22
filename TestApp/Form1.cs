@@ -27,41 +27,58 @@ namespace TestApp
             InitializeComponent();
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void Button1_Click(object sender, EventArgs e)
         {
             devInsize7130usb1.SerialPortNumber = 1;
         }
 
-        private void button2_Click(object sender, EventArgs e)
+        private void Button2_Click(object sender, EventArgs e)
         {
             DevInsize7130usb.StatusCodes status = devInsize7130usb1.StartConnection();
             label1.Text = status.ToString();
         }
 
-        private void button3_Click(object sender, EventArgs e)
+        private void Button3_Click(object sender, EventArgs e)
         {
             DevInsize7130usb.StatusCodes status = devInsize7130usb1.StopConnection();
             label2.Text = status.ToString();
         }
 
-        private void devInsize7130usb1_Connected()
+        private void DevInsize7130usb1_Connected()
         {
             label3.Text = "Connected";
         }
 
-        private void devInsize7130usb1_Disconnected()
+        private void DevInsize7130usb1_Disconnected()
         {
             label3.Text = "No connection";
         }
 
-        private void devInsize7130usb1_NewDataAvaible()
+        private void DevInsize7130usb1_NewDataAvaible()
         {
             //
+            while (devInsize7130usb1.QueueMeasuredData.Count > 1) 
+            {
+                devInsize7130usb1.QueueMeasuredData.Dequeue();
+            }
+            label4.Text = devInsize7130usb1.QueueMeasuredData.Dequeue().ToString();
         }
 
-        private void devInsize7130usb1_NotSupported()
+        private void DevInsize7130usb1_NotSupported()
         {
             // Устройство не поддерживается
+        }
+
+
+
+        private void DevInsize7130usb1_StatusConnectionChanged(DevInsize7130usb.ConnectionStates newStatus, DevInsize7130usb.ChangeStatusReasons reason)
+        {
+            // изменился статус подключения
+            //if( i)
+            _ = this.Invoke(new Action(() =>
+                { label5.Text = newStatus.ToString() + " : " + reason.ToString(); }
+            ));
+            
         }
     }
 }
