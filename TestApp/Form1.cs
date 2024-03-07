@@ -115,17 +115,21 @@ namespace TestApp
 
         private void Form1_FormClosing_1(object sender, FormClosingEventArgs e)
         {
-            if(devInsize7130usb1.IsConnected)
+
+            //devInsize7130usb1.StopConnection();
+            //Thread.Sleep(1000);
+            if (devInsize7130usb1.IsConnected)
             {
                 _ = MessageBox.Show("Нужно остановить передачу");
                 e.Cancel = true;
                 return;
             }
             //devInsize7130usb1.StopConnection();
-            Thread.Sleep(1000);
+            //Thread.Sleep(1000);
 
         }
 
+ 
         private void button4_Click(object sender, EventArgs e)
         {
             DialogResult result = MessageBox.Show("Вы уверены что хотите изменить положение нуля датчика?",

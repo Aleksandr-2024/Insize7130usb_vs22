@@ -139,7 +139,7 @@
             // 
             // devInsize7130usb1
             // 
-            this.devInsize7130usb1.SerialPortNumber = ((uint)(11u));
+            this.devInsize7130usb1.SerialPortNumber = ((uint)(7u));
             this.devInsize7130usb1.Connected += new Device_Insize7130usb.DevInsize7130usb.deviceConnected(this.DevInsize7130usb1_Connected);
             this.devInsize7130usb1.Disconnected += new Device_Insize7130usb.DevInsize7130usb.deviceDisconnected(this.DevInsize7130usb1_Disconnected);
             this.devInsize7130usb1.NotSupported += new Device_Insize7130usb.DevInsize7130usb.deviceNotSupported(this.DevInsize7130usb1_NotSupported);

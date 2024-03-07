@@ -247,7 +247,8 @@ namespace Device_Insize7130usb
             if ( _isConnected ) 
             { // подключено
                 // отключаем...
-                //serialPort1.Close();
+                //if (serialPort1.IsOpen)
+                //    { serialPort1.Close(); }
                 _isConnected = false;  // TODO: DEBUG
             }
             else if( _isConnecting )
